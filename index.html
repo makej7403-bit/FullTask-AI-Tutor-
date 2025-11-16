@@ -1,170 +1,223 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>FullTask AI Tutor</title>
-
+<link rel="icon" href="" />
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(to bottom right, #003d99, #1a75ff);
-        color: white;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    header {
-        padding: 20px;
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    #menuButton {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: white;
-        color: #003d99;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-    }
-
-    #menu {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.85);
-        color: white;
-        backdrop-filter: blur(4px);
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 60px;
-    }
-
-    #menu h2 {
-        font-size: 28px;
-        margin-bottom: 20px;
-    }
-
-    .menuItem {
-        background: #1a75ff;
-        width: 80%;
-        text-align: center;
-        padding: 15px;
-        margin: 8px 0;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 18px;
-    }
-
-    #output {
-        padding: 20px;
-        margin-top: 40px;
-        height: 55vh;
-        overflow-y: auto;
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-    }
-
-    #chatBox {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        padding: 20px;
-    }
-
-    #userInput {
-        width: 80%;
-        padding: 12px;
-        border-radius: 10px;
-        border: none;
-    }
-
-    #sendBtn {
-        padding: 12px 20px;
-        border: none;
-        background: white;
-        color: #003d99;
-        border-radius: 10px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+  :root {
+    --bg1: #0b3d91;
+    --bg2: #1f6ef2;
+    --card: rgba(255,255,255,0.06);
+    --muted: rgba(255,255,255,0.75);
+  }
+  html,body { height:100%; margin:0; font-family: Inter, system-ui, Arial; background: linear-gradient(135deg,var(--bg1),var(--bg2)); color:#fff; }
+  .app { display:flex; height:100vh; }
+  .sidebar { width:320px; background: rgba(6,18,54,0.75); padding:20px; box-sizing:border-box; overflow:auto; }
+  .brand { font-size:20px; font-weight:700; margin-bottom:6px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .menu { display:flex; flex-direction:column; gap:8px; }
+  .menu button { background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.03); padding:12px 14px; text-align:left; border-radius:8px; cursor:pointer; }
+  .menu button.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); }
+  .main { flex:1; padding:28px; overflow:auto; box-sizing:border-box; }
+  .heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .title { font-size:28px; font-weight:700; }
+  .desc { color:var(--muted); }
+  .card { background:var(--card); padding:18px; border-radius:12px; margin-top:18px; }
+  textarea { width:100%; height:160px; padding:12px; border-radius:8px; border:none; resize:vertical; font-size:15px; }
+  .controls { margin-top:12px; display:flex; gap:10px; }
+  .btn { background:#2a72ff; color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; }
+  .secondary { background:transparent; border:1px solid rgba(255,255,255,0.06); color:white; padding:10px 14px; border-radius:8px; cursor:pointer; }
+  #output { margin-top:16px; background: rgba(255,255,255,0.03); padding:14px; border-radius:8px; min-height:140px; white-space:pre-wrap; }
+  .footer { margin-top:18px; color:var(--muted); font-size:13px; }
+  .history { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .histItem { background: rgba(255,255,255,0.02); padding:10px; border-radius:8px; font-size:13px; }
+  /* responsive */
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .app { flex-direction:column; }
+    .main { padding:16px; }
+  }
 </style>
-
 </head>
 <body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">FullTask AI Tutor</div>
+      <div class="sub">Created by Akin S Sokpah — Liberia</div>
 
-<header>FullTask AI Tutor</header>
-<button id="menuButton">☰ Menu</button>
+      <div class="menu" id="toolMenu"></div>
 
-<!-- Full Screen Menu -->
-<div id="menu">
-    <h2>AI Tools Menu</h2>
+      <div class="footer">
+        <div>Contact: <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a></div>
+        <div style="margin-top:8px">Email: sokpahakinsaye@gmail.com</div>
+      </div>
+    </aside>
 
-    <div class="menuItem">Essay Writer</div>
-    <div class="menuItem">Math Solver</div>
-    <div class="menuItem">Code Generator</div>
-    <div class="menuItem">Image Description</div>
-    <div class="menuItem">Email Writer</div>
-    <div class="menuItem">Chatbot Tutor</div>
-    <div class="menuItem">Summarizer</div>
-    <div class="menuItem">Translator</div>
-    <div class="menuItem">Career Advisor</div>
-    <div class="menuItem">Health Tips</div>
-    <div class="menuItem">Motivation Coach</div>
-    <div class="menuItem">Business Ideas</div>
-    <div class="menuItem">Poem Creator</div>
-    <div class="menuItem">Story Generator</div>
-    <div class="menuItem">Grammar Corrector</div>
-    <div class="menuItem">Study Planner</div>
-    <div class="menuItem">Research Helper</div>
-    <div class="menuItem">Lesson Explainer</div>
-    <div class="menuItem">Financial Guide</div>
-    <div class="menuItem">AI Assistant</div>
-</div>
+    <main class="main">
+      <div class="heading">
+        <div>
+          <div class="title" id="toolTitle">Welcome</div>
+          <div class="desc" id="toolDesc">Choose a tool from the menu</div>
+        </div>
+        <div>
+          <button class="secondary" id="openMenuMobile" onclick="alert('Open the menu on larger screens or use sidebar')">Menu</button>
+        </div>
+      </div>
 
-<div id="output"></div>
+      <div class="card">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div style="flex:1">
+            <textarea id="promptInput" placeholder="Type your request or edit the example prompt..."></textarea>
+            <div class="controls">
+              <button class="btn" id="runBtn">Run</button>
+              <button class="secondary" id="resetBtn">Reset</button>
+              <button class="secondary" id="saveLocalBtn">Save (Local)</button>
+            </div>
+            <div id="output" aria-live="polite">No output yet.</div>
+          </div>
 
-<div id="chatBox">
-    <input id="userInput" type="text" placeholder="Ask FullTask AI Tutor..." />
-    <button id="sendBtn">Send</button>
-</div>
+          <div style="width:260px; margin-left:12px;">
+            <div style="font-weight:700; margin-bottom:8px">Feature Help</div>
+            <div id="featureHelp" style="color:var(--muted); font-size:14px">Select a feature to see examples and tips.</div>
+
+            <div style="margin-top:14px; font-weight:700">Recent</div>
+            <div id="recentList" class="history"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer" style="margin-top:20px">
+        FullTask AI Tutor — Created by Akin S Sokpah from Liberia • <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a>
+      </div>
+    </main>
+  </div>
 
 <script>
-    const output = document.getElementById("output");
+  // Tool definitions, example prompts, and descriptions
+  const TOOLS = [
+    { id:"Essay Writer", name:"Essay Writer", desc:"Write a well-structured essay.", example:"Write a 600-word essay about the importance of renewable energy." },
+    { id:"Math Solver", name:"Math Solver", desc:"Solve math problems step-by-step.", example:"Integrate x^3 dx from 0 to 2." },
+    { id:"Code Generator", name:"Code Generator", desc:"Generate runnable code snippets.", example:"Write a JavaScript function to debounce a callback." },
+    { id:"Image Description", name:"Image Description", desc:"Create image-generation prompts.", example:"A neon-lit futuristic city at dusk with flying cars." },
+    { id:"Email Writer", name:"Email Writer", desc:"Compose professional emails.", example:"Write a polite follow-up email after an interview." },
+    { id:"Chatbot Tutor", name:"Chatbot Tutor", desc:"Conversational tutor for topics.", example:"Explain Newton's second law and give a simple example." },
+    { id:"Summarizer", name:"Summarizer", desc:"Summarize long text into bullets.", example:"Summarize the following article in five bullets: [paste article]" },
+    { id:"Translator", name:"Translator", desc:"Translate text to another language.", example:"Translate to French: How are you today?" },
+    { id:"Career Advisor", name:"Career Advisor", desc:"Career advice and steps.", example:"I have 2 years experience in web dev. How do I become a fullstack developer?" },
+    { id:"Health Tips", name:"Health Tips", desc:"General safe health tips.", example:"How can I improve sleep quality?" },
+    { id:"Motivation Coach", name:"Motivation Coach", desc:"Encouraging steps and plan.", example:"I feel stuck with studying. Help me feel motivated and create a plan." },
+    { id:"Business Ideas", name:"Business Ideas", desc:"Generate business/startup ideas.", example:"Give 10 edtech startup ideas for African students." },
+    { id:"Poem Creator", name:"Poem Creator", desc:"Short poetic pieces.", example:"Write a short poem about the Atlantic Ocean." },
+    { id:"Story Generator", name:"Story Generator", desc:"Short story generation.", example:"Write a short sci-fi story about finding a message in a bottle on Mars." },
+    { id:"Grammar Corrector", name:"Grammar Corrector", desc:"Fix grammar and clarity.", example:"Correct: I has went to the market yesterday and buy fruits." },
+    { id:"Study Planner", name:"Study Planner", desc:"Create learning schedules.", example:"Create a 4-week study plan to learn Python for a beginner." },
+    { id:"Research Helper", name:"Research Helper", desc:"Assist with research planning.", example:"Help me plan research about soil erosion in Liberia." },
+    { id:"Lesson Explainer", name:"Lesson Explainer", desc:"Explain lessons simply.", example:"Explain photosynthesis to a 12-year-old." },
+    { id:"Financial Guide", name:"Financial Guide", desc:"High level finance tips.", example:"Give tips for budgeting on a tight income." },
+    { id:"AI Assistant", name:"AI Assistant", desc:"General assistant", example:"Help me brainstorm features for an AI tutor website." }
+  ];
 
-    document.getElementById("sendBtn").onclick = async () => {
-        const text = document.getElementById("userInput").value;
-        if (!text) return;
+  // Build menu
+  const menu = document.getElementById("toolMenu");
+  TOOLS.forEach((t, idx) => {
+    const btn = document.createElement("button");
+    btn.innerText = t.name;
+    btn.onclick = () => selectTool(t.id);
+    if (idx === 0) btn.classList.add("active");
+    menu.appendChild(btn);
+  });
 
-        output.innerHTML += `<div><b>You:</b> ${text}</div>`;
+  let currentTool = TOOLS[0];
+  function selectTool(id) {
+    currentTool = TOOLS.find(t => t.id === id) || TOOLS[0];
+    // mark active
+    Array.from(menu.children).forEach(b => b.classList.remove("active"));
+    const activeBtn = Array.from(menu.children).find(b => b.innerText === currentTool.name);
+    if (activeBtn) activeBtn.classList.add("active");
+    document.getElementById("toolTitle").innerText = currentTool.name;
+    document.getElementById("toolDesc").innerText = currentTool.desc;
+    document.getElementById("promptInput").value = currentTool.example;
+    document.getElementById("featureHelp").innerText = "Tip: " + currentTool.desc;
+  }
 
-        const response = await fetch("/api/ask", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text })
-        });
+  // initialize
+  selectTool(TOOLS[0].id);
 
-        const data = await response.json();
+  // Run button
+  document.getElementById("runBtn").addEventListener("click", async () => {
+    const prompt = document.getElementById("promptInput").value.trim();
+    if (!prompt) return alert("Enter a prompt.");
 
-        output.innerHTML += `<div><b>FullTask AI:</b> ${data.reply}</div>`;
-    };
+    // local creator short-circuit
+    if (/who created|who made|creator|who built|author/i.test(prompt)) {
+      document.getElementById("output").innerText = "This platform was created by Akin S Sokpah from Liberia.";
+      saveLocalHistory(currentTool.name, prompt, document.getElementById("output").innerText);
+      return;
+    }
 
-    document.getElementById("menuButton").onclick = () => {
-        const menu = document.getElementById("menu");
-        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-    };
+    document.getElementById("output").innerText = "Thinking...";
+
+    try {
+      const resp = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: prompt, toolId: currentTool.name })
+      });
+      const data = await resp.json();
+      if (data.error) {
+        document.getElementById("output").innerText = "Error: " + (data.error || JSON.stringify(data));
+      } else {
+        document.getElementById("output").innerText = data.reply || JSON.stringify(data);
+        saveLocalHistory(currentTool.name, prompt, data.reply || "");
+      }
+    } catch (err) {
+      document.getElementById("output").innerText = "Network error: " + err.message;
+    }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    document.getElementById("promptInput").value = currentTool.example;
+    document.getElementById("output").innerText = "No output yet.";
+  });
+
+  // Simple local history (stored in localStorage)
+  function saveLocalHistory(tool, prompt, output) {
+    const key = "ft_history_v1";
+    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+    arr.unshift({ tool, prompt, output, ts: new Date().toISOString() });
+    localStorage.setItem(key, JSON.stringify(arr.slice(0,50)));
+    renderHistory();
+  }
+  function renderHistory() {
+    const key = "ft_history_v1";
+    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+    const container = document.getElementById("recentList");
+    container.innerHTML = "";
+    if (!arr.length) {
+      container.innerHTML = "<div style='color:var(--muted)'>No recent activity</div>";
+      return;
+    }
+    arr.slice(0,6).forEach(it => {
+      const el = document.createElement("div");
+      el.className = "histItem";
+      el.innerHTML = `<div style="font-weight:600">${it.tool} • <span style="font-size:12px;color:var(--muted)">${new Date(it.ts).toLocaleString()}</span></div><div style="margin-top:6px;font-size:13px">${escapeHtml(it.prompt)}</div>`;
+      container.appendChild(el);
+    });
+  }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+  // load existing history on start
+  renderHistory();
+
+  // Save button saves current prompt+output manually
+  document.getElementById("saveLocalBtn").addEventListener("click", () => {
+    const prompt = document.getElementById("promptInput").value || "";
+    const output = document.getElementById("output").innerText || "";
+    saveLocalHistory(currentTool.name, prompt, output);
+    alert("Saved locally.");
+  });
 </script>
-
 </body>
 </html>

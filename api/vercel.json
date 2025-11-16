@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/upload.js": { "memory": 3008, "maxDuration": 30 },
+    "api/audio.js": { "memory": 3008, "maxDuration": 30 }
+  }
+}

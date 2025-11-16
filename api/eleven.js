@@ -10,12 +10,15 @@ module.exports = async (req, res) => {
   }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { text, voice = "alloy" } = req.body || {};
-  if (!text) return res.status(400).json({ error: "text required" });
-  if (!process.env.ELEVEN_API_KEY) return res.status(500).json({ error: "ELEVEN_API_KEY missing" });
-
   try {
-    // ElevenLabs TTS endpoint (modern API)
+    let body = req.body;
+    if (!body || typeof body === "string") {
+      try { body = JSON.parse(req.body || "{}"); } catch (e) { body = {}; }
+    }
+    const { text, voice = "alloy" } = body || {};
+    if (!text) return res.status(400).json({ error: "text required" });
+    if (!process.env.ELEVEN_API_KEY) return res.status(500).json({ error: "ELEVEN_API_KEY missing" });
+
     const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice)}`;
 
     const r = await fetch(apiUrl, {
@@ -29,17 +32,16 @@ module.exports = async (req, res) => {
 
     if (!r.ok) {
       const errBody = await r.text();
-      console.error("eleven API error", errBody);
+      console.error("ElevenLabs error:", errBody);
       return res.status(500).json({ error: "ElevenLabs TTS failed", details: errBody });
     }
 
     const arrayBuffer = await r.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    // Send audio as base64 so client can create blob url
     const b64 = buffer.toString("base64");
     res.json({ audioBase64: b64 });
   } catch (err) {
-    console.error("eleven error:", err);
+    console.error("eleven server error:", err);
     res.status(500).json({ error: err.message || String(err) });
   }
 };

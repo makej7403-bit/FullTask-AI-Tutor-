@@ -16,14 +16,13 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY
     });
 
-    // FIX: Use a real model + system instruction
     const completion = await client.chat.completions.create({
       model: "gpt-4.1",
       messages: [
         {
           role: "system",
           content:
-            "You are FullTask AI Tutor, a helpful, intelligent assistant created by Akin S. Sokpah from Liberia. Give clear, detailed, high-quality answers and NEVER repeat the user's message. Produce original responses only."
+            "You are FullTask AI Tutor, a powerful, intelligent assistant created by Akin S. Sokpah from Liberia. Always give original responses. Never repeat the user's message. Respond professionally with complete, detailed answers."
         },
         {
           role: "user",
@@ -33,11 +32,10 @@ export default async function handler(req, res) {
       temperature: 0.7
     });
 
-    const aiResponse = completion.choices[0].message.content;
-
     return res.status(200).json({
-      reply: aiResponse // CLEAN STRING OUTPUT
+      reply: completion.choices[0].message.content
     });
+
   } catch (error) {
     console.error("Chat API Error:", error);
     res.status(500).json({ error: error.message });

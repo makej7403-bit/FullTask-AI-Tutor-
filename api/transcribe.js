@@ -12,38 +12,51 @@ module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { fileUrl } = req.body || {};
-
+    let body = req.body;
+    if (!body || typeof body === "string") {
+      try { body = JSON.parse(req.body || "{}"); } catch (e) { body = {}; }
+    }
+    const { fileUrl } = body || {};
     if (!fileUrl) return res.status(400).json({ error: "fileUrl required" });
+
     if (!process.env.OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY missing" });
 
-    // Fetch binary bytes
+    // If data URL -> extract bytes
+    if (fileUrl.startsWith("data:")) {
+      const comma = fileUrl.indexOf(",");
+      const b64 = fileUrl.slice(comma + 1);
+      const buffer = Buffer.from(b64, "base64");
+
+      const form = new FormData();
+      form.append("file", buffer, { filename: "upload.webm" });
+      form.append("model", "whisper-1");
+
+      const r = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: form
+      });
+      const data = await r.json();
+      return res.json({ transcription: data.text || data });
+    }
+
+    // Remote URL
     const fileResp = await fetch(fileUrl);
     if (!fileResp.ok) return res.status(400).json({ error: "Failed to fetch fileUrl" });
     const arrayBuffer = await fileResp.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // multipart form for OpenAI audio/transcriptions endpoint
     const form = new FormData();
-    form.append("file", buffer, { filename: "upload.wav" });
+    form.append("file", buffer, { filename: "upload" });
     form.append("model", "whisper-1");
 
-    const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const r2 = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-      },
+      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       body: form
     });
-
-    const data = await resp.json();
-    if (data?.text) {
-      return res.json({ transcription: data.text, raw: data });
-    } else if (data?.error) {
-      return res.status(500).json({ error: data.error });
-    } else {
-      return res.json({ transcription: data.text || JSON.stringify(data) });
-    }
+    const j = await r2.json();
+    return res.json({ transcription: j.text || j });
   } catch (err) {
     console.error("transcribe error:", err);
     return res.status(500).json({ error: err.message || String(err) });

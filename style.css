@@ -1,90 +1,37 @@
-body {
-  margin: 0;
-  background: #071a2f;
-  font-family: Arial;
-  color: white;
-  display: flex;
+:root{
+  --bg1:#07122b; --bg2:#0b3d91; --accent:#2a72ff; --muted:#9fb3d6;
 }
-
-#sidebar {
-  width: 260px;
-  background: #0b2548;
-  padding: 20px;
-  height: 100vh;
-}
-
-#sidebar h2 { margin-top: 0; }
-
-#sidebar ul {
-  padding: 0;
-  list-style: none;
-}
-
-#sidebar li {
-  padding: 10px;
-  margin-top: 8px;
-  background: #123868;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-#sidebar li:hover {
-  background: #1e4f99;
-}
-
-#main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-header {
-  padding: 10px;
-  background: #0f335c;
-  display: flex;
-  align-items: center;
-}
-
-#chatArea {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.user {
-  text-align: right;
-  margin: 10px;
-  background: #1e4f99;
-  padding: 10px;
-  border-radius: 6px;
-}
-
-.ai {
-  text-align: left;
-  margin: 10px;
-  background: #102841;
-  padding: 10px;
-  border-radius: 6px;
-}
-
-#inputArea {
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-#userInput {
-  flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-}
-
-#sendBtn {
-  padding: 10px 20px;
-  background: #1e4f99;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef7}
+.app{display:flex;min-height:100vh;gap:18px;padding:18px}
+.sidebar{width:300px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:0 8px 30px rgba(4,12,30,0.5);display:flex;flex-direction:column}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#5aa0ff);display:flex;align-items:center;justify-content:center;font-weight:700}
+.title{font-weight:700;font-size:18px}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:12px}
+.btn{background:var(--accent);color:#fff;padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+.tool-list{overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-right:6px}
+.main{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 8px}
+.page-title{font-size:20px;font-weight:700}
+.tool-tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;color:var(--muted);margin-left:12px}
+.content{flex:1}
+.grid{display:grid;grid-template-columns:360px 1fr 340px;gap:18px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(4,12,30,0.5)}
+.grid-items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.tool-tile{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
+.chat-panel{display:flex;flex-direction:column;height:720px}
+.chat-window{flex:1;overflow:auto;padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+.message{max-width:75%;padding:10px 12px;margin:8px 0;border-radius:12px;white-space:pre-wrap;line-height:1.4}
+.message.user{margin-left:auto;background:linear-gradient(90deg,var(--accent),#4ea0ff);color:white}
+.message.ai{margin-right:auto;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.02)}
+.composer{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+textarea{width:100%;border-radius:10px;padding:12px;border:none;background:rgba(255,255,255,0.02);color:inherit;min-height:90px;resize:vertical}
+.composer-actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.left-actions{display:flex;gap:8px}
+.right-actions{display:flex;gap:8px}
+.sidecard{display:flex;flex-direction:column;gap:10px;height:720px;overflow:auto}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.footer{color:var(--muted);font-size:13px;text-align:center;margin-top:8px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.sidebar{display:none}}

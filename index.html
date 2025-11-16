@@ -1,158 +1,319 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Chat – Clean Version (No Recent History)</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      height: 100vh;
-    }/* Sidebar */
-#sidebar {
-  width: 260px;
-  background: #111;
-  color: white;
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FullTask AI Tutor</title>
+<style>
+  :root { --bg1:#0b3d91; --bg2:#1f6ef2; --card: rgba(255,255,255,0.06); --muted: rgba(255,255,255,0.75); }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff}
+  .app{display:flex;height:100vh}
+  .sidebar{width:320px;background:rgba(6,18,54,0.85);padding:20px;box-sizing:border-box;overflow:auto}
+  .brand{font-size:20px;font-weight:700;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .menu{display:flex;flex-direction:column;gap:8px}
+  .menu button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.03);padding:12px 14px;text-align:left;border-radius:8px;cursor:pointer}
+  .menu button.active{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.08)}
+  .main{flex:1;padding:28px;overflow:auto;box-sizing:border-box}
+  .heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .title{font-size:28px;font-weight:700}
+  .desc{color:var(--muted)}
+  .card{background:var(--card);padding:18px;border-radius:12px;margin-top:18px}
+  textarea{width:100%;height:160px;padding:12px;border-radius:8px;border:none;resize:vertical;font-size:15px}
+  .controls{margin-top:12px;display:flex;gap:10px}
+  .btn{background:#2a72ff;color:white;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+  .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:10px 14px;border-radius:8px;cursor:pointer}
+  #output{margin-top:16px;background:rgba(255,255,255,0.03);padding:14px;border-radius:8px;min-height:140px;white-space:pre-wrap}
+  .footer{margin-top:18px;color:var(--muted);font-size:13px}
+  .uploader{margin-top:12px;display:flex;gap:8px;align-items:center}
+  input[type=file]{color:#333}
+  .record-controls{margin-top:10px;display:flex;gap:8px}
+  @media(max-width:900px){.sidebar{display:none}.app{flex-direction:column}.main{padding:16px}}
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">FullTask AI Tutor</div>
+      <div class="sub">Created by Akin S Sokpah — Liberia</div>
+
+      <div class="menu" id="toolMenu"></div>
+
+      <div style="margin-top:18px;font-weight:700">Uploads</div>
+      <div class="uploader">
+        <input id="fileInput" type="file" accept="image/*,audio/*,application/pdf" />
+        <button class="secondary" id="uploadBtn">Upload</button>
+      </div>
+
+      <div style="margin-top:12px;font-weight:700">Record Voice</div>
+      <div class="record-controls">
+        <button class="secondary" id="recStart">Start</button>
+        <button class="secondary" id="recStop" disabled>Stop</button>
+      </div>
+
+      <div style="margin-top:16px">Contact: <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a></div>
+      <div style="margin-top:6px">sokpahakinsaye@gmail.com</div>
+    </aside>
+
+    <main class="main">
+      <div class="heading">
+        <div>
+          <div class="title" id="toolTitle">Welcome</div>
+          <div class="desc" id="toolDesc">Choose a tool from the menu</div>
+        </div>
+        <div>
+          <button class="secondary" id="openMenuMobile" onclick="alert('Open the menu on larger screens')">Menu</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="flex:1">
+            <textarea id="promptInput" placeholder="Type your request or edit the example prompt..."></textarea>
+            <div class="controls">
+              <button class="btn" id="runBtn">Run</button>
+              <button class="secondary" id="resetBtn">Reset</button>
+              <button class="secondary" id="speakBtn">Speak Reply (ElevenLabs)</button>
+            </div>
+            <div id="output" aria-live="polite">No output yet.</div>
+          </div>
+
+          <div style="width:260px;margin-left:12px;">
+            <div style="font-weight:700;margin-bottom:8px">Feature Help</div>
+            <div id="featureHelp" style="color:var(--muted);font-size:14px">Select a feature to see examples and tips.</div>
+
+            <!-- NO 'Recent' section — removed as requested -->
+
+            <div style="margin-top:12px;font-weight:700">Live Call</div>
+            <button class="secondary" id="joinCallBtn">Join Live Call (Daily)</button>
+            <div id="callContainer" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer" style="margin-top:20px">
+        FullTask AI Tutor — Created by Akin S Sokpah from Liberia • <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a>
+      </div>
+    </main>
+  </div>
+
+<script src="https://unpkg.com/@daily-co/daily-js"></script>
+<script>
+/* -------------------------
+Reset storage on load — ensures no Recent/history remains
+------------------------- */
+window.addEventListener("load", () => {
+  try { localStorage.clear(); sessionStorage.clear(); } catch(e) {}
+});
+
+/* -------------------------
+Tool definitions
+------------------------- */
+const TOOLS = [
+  { id:"Essay Writer", example:"Write a 600-word essay about the importance of renewable energy." },
+  { id:"Math Solver", example:"Integrate x^3 dx from 0 to 2." },
+  { id:"Code Generator", example:"Write a JavaScript function to debounce a callback." },
+  { id:"Image Description", example:"A neon-lit futuristic city at dusk with flying cars." },
+  { id:"Email Writer", example:"Write a polite follow-up email after an interview." },
+  { id:"Chatbot Tutor", example:"Explain Newton's second law and give a simple example." },
+  { id:"Summarizer", example:"Summarize the following article in five bullets: [paste article]" },
+  { id:"Translator", example:"Translate to French: How are you today?" },
+  { id:"Career Advisor", example:"I have 2 years experience in web dev. How do I become a fullstack developer?" },
+  { id:"Health Tips", example:"How can I improve sleep quality?" },
+  { id:"Motivation Coach", example:"Help me feel motivated and create a study plan." },
+  { id:"Business Ideas", example:"Give 10 edtech startup ideas for African students." },
+  { id:"Poem Creator", example:"Write a short poem about the Atlantic Ocean." },
+  { id:"Story Generator", example:"Write a short sci-fi story about finding a message in a bottle on Mars." },
+  { id:"Grammar Corrector", example:"Correct: I has went to the market yesterday and buy fruits." },
+  { id:"Study Planner", example:"Create a 4-week study plan to learn Python for a beginner." },
+  { id:"Research Helper", example:"Help me plan research about soil erosion in Liberia." },
+  { id:"Lesson Explainer", example:"Explain photosynthesis to a 12-year-old." },
+  { id:"Financial Guide", example:"Give tips for budgeting on a tight income." },
+  { id:"AI Assistant", example:"Help me brainstorm features for an AI tutor website." }
+];
+
+/* -------------------------
+Build menu
+------------------------- */
+const menu = document.getElementById("toolMenu");
+TOOLS.forEach((t, idx) => {
+  const btn = document.createElement("button");
+  btn.innerText = t.id;
+  btn.className = idx===0 ? "active" : "";
+  btn.onclick = () => selectTool(t.id);
+  menu.appendChild(btn);
+});
+let currentTool = TOOLS[0];
+function selectTool(id){
+  currentTool = TOOLS.find(t=>t.id===id) || TOOLS[0];
+  Array.from(menu.children).forEach(b => b.classList.remove("active"));
+  const btn = Array.from(menu.children).find(b => b.innerText === currentTool.id);
+  if (btn) btn.classList.add("active");
+  document.getElementById("toolTitle").innerText = currentTool.id;
+  document.getElementById("toolDesc").innerText = "Use: " + currentTool.id;
+  document.getElementById("promptInput").value = currentTool.example;
+  document.getElementById("featureHelp").innerText = "Tip: " + currentTool.example;
 }
+selectTool(TOOLS[0].id);
 
-#sidebar h2 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-/* Main Chat Area */
-#chat-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.msg {
-  max-width: 65%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 10px;
-  font-size: 15px;
-  line-height: 1.4;
-  white-space: pre-wrap;
-}
-
-.user {
-  background: #007bff;
-  color: white;
-  margin-left: auto;
-}
-
-.bot {
-  background: #e7e7e7;
-  color: #111;
-  margin-right: auto;
-}
-
-/* Input Area */
-#input-area {
-  display: flex;
-  padding: 15px;
-  background: white;
-  border-top: 1px solid #ccc;
-}
-
-#input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  font-size: 15px;
-}
-
-#send {
-  margin-left: 10px;
-  padding: 12px 20px;
-  background: #111;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-  </style>
-</head><body>  <!-- Sidebar (No Recent Section Anymore) -->  <div id="sidebar">
-    <div>
-      <h2>AI Chat</h2>
-      <p>Clean version – No recent history saved.</p>
-    </div>
-  </div>  <!-- Chat Area -->  <div id="chat-container"><div id="messages"></div>
-
-<div id="input-area">
-  <input id="input" type="text" placeholder="Type your message..." />
-  <button id="send">Send</button>
-</div>
-
-  </div>  <script>
-    // Reset history on every load
-    window.addEventListener("load", () => {
-      localStorage.clear();
-      sessionStorage.clear();
+/* -------------------------
+Run (chat)
+------------------------- */
+document.getElementById("runBtn").addEventListener("click", async () => {
+  const prompt = document.getElementById("promptInput").value.trim();
+  if (!prompt) return alert("Enter a prompt.");
+  // short-circuit local creator question
+  if (/who created|who made|creator|who built|author/i.test(prompt)) {
+    document.getElementById("output").innerText = "This platform was created by Akin S Sokpah from Liberia.";
+    return;
+  }
+  document.getElementById("output").innerText = "Thinking...";
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ message: prompt, toolId: currentTool.id })
     });
+    const j = await r.json();
+    if (j.error) document.getElementById("output").innerText = "Error: " + (j.error || JSON.stringify(j));
+    else document.getElementById("output").innerText = j.reply || JSON.stringify(j);
+  } catch (err) {
+    document.getElementById("output").innerText = "Network error: " + err.message;
+  }
+});
 
-    // Chat messages always start empty
-    let messages = [];
+/* -------------------------
+Reset
+------------------------- */
+document.getElementById("resetBtn").addEventListener("click", () => {
+  document.getElementById("promptInput").value = currentTool.example;
+  document.getElementById("output").innerText = "No output yet.";
+});
 
-    const msgContainer = document.getElementById("messages");
-    const input = document.getElementById("input");
-    const sendBtn = document.getElementById("send");
+/* -------------------------
+ElevenLabs TTS (speak)
+------------------------- */
+document.getElementById("speakBtn").addEventListener("click", async () => {
+  const text = document.getElementById("output").innerText || "";
+  if (!text) return alert("No text to speak.");
+  try {
+    const r = await fetch("/api/eleven", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ text, voice: "alloy" })
+    });
+    const j = await r.json();
+    if (j.error) return alert("TTS error: " + JSON.stringify(j));
+    const b64 = j.audioBase64;
+    const blob = base64ToBlob(b64, "audio/mpeg");
+    const url = URL.createObjectURL(blob);
+    const a = new Audio(url);
+    a.play();
+  } catch (err) {
+    alert("TTS failed: " + err.message);
+  }
+});
+function base64ToBlob(b64, mime) {
+  const bytes = atob(b64);
+  const len = bytes.length;
+  const buf = new Uint8Array(len);
+  for (let i=0;i<len;i++) buf[i] = bytes.charCodeAt(i);
+  return new Blob([buf], { type: mime });
+}
 
-    function addMessage(text, sender) {
-      const div = document.createElement("div");
-      div.className = "msg " + sender;
-      div.textContent = text;
-      msgContainer.appendChild(div);
-      msgContainer.scrollTop = msgContainer.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage(text, "user");
-      input.value = "";
-
-      // Call backend / API route
+/* -------------------------
+File upload (audio => transcribe)
+Supports data:base64 uploads; for images/docs it warns (Cloudinary recommended)
+------------------------- */
+document.getElementById("uploadBtn").addEventListener("click", async () => {
+  const f = document.getElementById("fileInput").files[0];
+  if (!f) return alert("Choose a file");
+  if (f.type.startsWith("audio/")) {
+    document.getElementById("output").innerText = "Uploading and transcribing audio...";
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
       try {
-        const res = await fetch("/api/chat", {
+        const r = await fetch("/api/transcribe", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text })
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ fileUrl: dataUrl })
         });
+        const j = await r.json();
+        if (j.error) { document.getElementById("output").innerText = "Transcription error: " + JSON.stringify(j); return; }
+        document.getElementById("output").innerText = "Transcription: " + j.transcription;
+        // auto-send to chat
+        const rr = await fetch("/api/chat", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ transcription: j.transcription, toolId: currentTool.id })});
+        const rj = await rr.json();
+        document.getElementById("output").innerText = rj.reply || JSON.stringify(rj);
+      } catch (err) { document.getElementById("output").innerText = "Upload error: "+err.message; }
+    };
+    reader.readAsDataURL(f);
+  } else {
+    alert("Image/PDF support requires Cloudinary/S3. Currently only audio auto-processing is supported without Cloudinary.");
+  }
+});
 
-        const data = await res.json();
-        addMessage(data.reply, "bot");
+/* -------------------------
+Audio recorder (web media)
+------------------------- */
+let recorder, recordedChunks = [];
+document.getElementById("recStart").addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recordedChunks = [];
+    recorder.ondataavailable = (e) => { if (e.data.size>0) recordedChunks.push(e.data); };
+    recorder.start();
+    document.getElementById("recStart").disabled = true;
+    document.getElementById("recStop").disabled = false;
+  } catch (err) { alert("Microphone access denied: " + err.message); }
+});
+document.getElementById("recStop").addEventListener("click", async () => {
+  recorder.stop();
+  document.getElementById("recStart").disabled = false;
+  document.getElementById("recStop").disabled = true;
+  recorder.onstop = async () => {
+    const blob = new Blob(recordedChunks, { type: "audio/webm" });
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      document.getElementById("output").innerText = "Transcribing recording...";
+      try {
+        const r = await fetch("/api/transcribe", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ fileUrl: dataUrl })});
+        const j = await r.json();
+        if (j.error) { document.getElementById("output").innerText = "Transcription error: "+JSON.stringify(j); return; }
+        document.getElementById("output").innerText = "Transcription: " + j.transcription;
+        const rr = await fetch("/api/chat", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ transcription: j.transcription, toolId: currentTool.id })});
+        const rj = await rr.json();
+        document.getElementById("output").innerText = rj.reply || JSON.stringify(rj);
+      } catch (err) { document.getElementById("output").innerText = "Error: "+err.message; }
+    };
+    reader.readAsDataURL(blob);
+  };
+});
 
-      } catch (err) {
-        addMessage("Error connecting to AI.", "bot");
-      }
-    }
+/* -------------------------
+Daily join (basic)
+------------------------- */
+document.getElementById("joinCallBtn").addEventListener("click", async () => {
+  const room = prompt("Enter Daily room name (create on Daily.co):");
+  if (!room) return;
+  document.getElementById("output").innerText = "Requesting Daily token...";
+  try {
+    const r = await fetch("/api/daily-token", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ roomName: room, userName: 'Visitor' })});
+    const j = await r.json();
+    if (j.error) { alert("Daily error: "+JSON.stringify(j)); return; }
+    const meetingUrl = j.url || j.meeting_url || `https://${room}.daily.co/${room}`;
+    const frame = window.DailyIframe.createFrame(document.getElementById("callContainer"), { showLeaveButton:true });
+    await frame.join({ url: meetingUrl });
+    document.getElementById("output").innerText = "Joined call: " + meetingUrl;
+  } catch (err) { alert("Daily join failed: "+err.message); }
+});
 
-    sendBtn.addEventListener("click", sendMessage);
-    input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
-  </script></body>
+/* -------------------------
+Helper: short-circuit
+------------------------- */
+</script>
+</body>
 </html>

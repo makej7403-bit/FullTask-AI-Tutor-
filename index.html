@@ -6,15 +6,10 @@
 <title>FullTask AI Tutor</title>
 <link rel="icon" href="" />
 <style>
-  :root {
-    --bg1: #0b3d91;
-    --bg2: #1f6ef2;
-    --card: rgba(255,255,255,0.06);
-    --muted: rgba(255,255,255,0.75);
-  }
+  :root { --bg1:#0b3d91; --bg2:#1f6ef2; --card: rgba(255,255,255,0.06); --muted: rgba(255,255,255,0.75); }
   html,body { height:100%; margin:0; font-family: Inter, system-ui, Arial; background: linear-gradient(135deg,var(--bg1),var(--bg2)); color:#fff; }
   .app { display:flex; height:100vh; }
-  .sidebar { width:320px; background: rgba(6,18,54,0.75); padding:20px; box-sizing:border-box; overflow:auto; }
+  .sidebar { width:320px; background: rgba(6,18,54,0.85); padding:20px; box-sizing:border-box; overflow:auto; }
   .brand { font-size:20px; font-weight:700; margin-bottom:6px; }
   .sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
   .menu { display:flex; flex-direction:column; gap:8px; }
@@ -33,12 +28,10 @@
   .footer { margin-top:18px; color:var(--muted); font-size:13px; }
   .history { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
   .histItem { background: rgba(255,255,255,0.02); padding:10px; border-radius:8px; font-size:13px; }
-  /* responsive */
-  @media (max-width:900px) {
-    .sidebar { display:none; }
-    .app { flex-direction:column; }
-    .main { padding:16px; }
-  }
+  .uploader { margin-top:12px; display:flex; gap:8px; align-items:center; }
+  input[type=file] { color: #333; }
+  .record-controls { margin-top:10px; display:flex; gap:8px; }
+  @media (max-width:900px) { .sidebar { display:none; } .app { flex-direction:column; } .main { padding:16px; } }
 </style>
 </head>
 <body>
@@ -49,10 +42,20 @@
 
       <div class="menu" id="toolMenu"></div>
 
-      <div class="footer">
-        <div>Contact: <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a></div>
-        <div style="margin-top:8px">Email: sokpahakinsaye@gmail.com</div>
+      <div style="margin-top:18px; font-weight:700">Uploads</div>
+      <div class="uploader">
+        <input id="fileInput" type="file" accept="image/*,audio/*,application/pdf" />
+        <button class="secondary" id="uploadBtn">Upload</button>
       </div>
+
+      <div style="margin-top:12px; font-weight:700">Record Voice</div>
+      <div class="record-controls">
+        <button class="secondary" id="recStart">Start</button>
+        <button class="secondary" id="recStop" disabled>Stop</button>
+      </div>
+
+      <div style="margin-top:16px;">Contact: <a href="https://www.facebook.com/profile.php?id=61583456361691" style="color:#dbe9ff">Facebook</a></div>
+      <div style="margin-top:6px">sokpahakinsaye@gmail.com</div>
     </aside>
 
     <main class="main">
@@ -62,7 +65,7 @@
           <div class="desc" id="toolDesc">Choose a tool from the menu</div>
         </div>
         <div>
-          <button class="secondary" id="openMenuMobile" onclick="alert('Open the menu on larger screens or use sidebar')">Menu</button>
+          <button class="secondary" id="openMenuMobile" onclick="alert('Open the menu on larger screens')">Menu</button>
         </div>
       </div>
 
@@ -73,7 +76,7 @@
             <div class="controls">
               <button class="btn" id="runBtn">Run</button>
               <button class="secondary" id="resetBtn">Reset</button>
-              <button class="secondary" id="saveLocalBtn">Save (Local)</button>
+              <button class="secondary" id="speakBtn">Speak Reply (ElevenLabs)</button>
             </div>
             <div id="output" aria-live="polite">No output yet.</div>
           </div>
@@ -84,6 +87,10 @@
 
             <div style="margin-top:14px; font-weight:700">Recent</div>
             <div id="recentList" class="history"></div>
+
+            <div style="margin-top:12px; font-weight:700">Live Call</div>
+            <button class="secondary" id="joinCallBtn">Join Live Call (Daily)</button>
+            <div id="callContainer" style="margin-top:8px;"></div>
           </div>
         </div>
       </div>
@@ -94,130 +101,276 @@
     </main>
   </div>
 
+<!-- Daily client (for live calls) -->
+<script src="https://unpkg.com/@daily-co/daily-js"></script>
+
 <script>
-  // Tool definitions, example prompts, and descriptions
-  const TOOLS = [
-    { id:"Essay Writer", name:"Essay Writer", desc:"Write a well-structured essay.", example:"Write a 600-word essay about the importance of renewable energy." },
-    { id:"Math Solver", name:"Math Solver", desc:"Solve math problems step-by-step.", example:"Integrate x^3 dx from 0 to 2." },
-    { id:"Code Generator", name:"Code Generator", desc:"Generate runnable code snippets.", example:"Write a JavaScript function to debounce a callback." },
-    { id:"Image Description", name:"Image Description", desc:"Create image-generation prompts.", example:"A neon-lit futuristic city at dusk with flying cars." },
-    { id:"Email Writer", name:"Email Writer", desc:"Compose professional emails.", example:"Write a polite follow-up email after an interview." },
-    { id:"Chatbot Tutor", name:"Chatbot Tutor", desc:"Conversational tutor for topics.", example:"Explain Newton's second law and give a simple example." },
-    { id:"Summarizer", name:"Summarizer", desc:"Summarize long text into bullets.", example:"Summarize the following article in five bullets: [paste article]" },
-    { id:"Translator", name:"Translator", desc:"Translate text to another language.", example:"Translate to French: How are you today?" },
-    { id:"Career Advisor", name:"Career Advisor", desc:"Career advice and steps.", example:"I have 2 years experience in web dev. How do I become a fullstack developer?" },
-    { id:"Health Tips", name:"Health Tips", desc:"General safe health tips.", example:"How can I improve sleep quality?" },
-    { id:"Motivation Coach", name:"Motivation Coach", desc:"Encouraging steps and plan.", example:"I feel stuck with studying. Help me feel motivated and create a plan." },
-    { id:"Business Ideas", name:"Business Ideas", desc:"Generate business/startup ideas.", example:"Give 10 edtech startup ideas for African students." },
-    { id:"Poem Creator", name:"Poem Creator", desc:"Short poetic pieces.", example:"Write a short poem about the Atlantic Ocean." },
-    { id:"Story Generator", name:"Story Generator", desc:"Short story generation.", example:"Write a short sci-fi story about finding a message in a bottle on Mars." },
-    { id:"Grammar Corrector", name:"Grammar Corrector", desc:"Fix grammar and clarity.", example:"Correct: I has went to the market yesterday and buy fruits." },
-    { id:"Study Planner", name:"Study Planner", desc:"Create learning schedules.", example:"Create a 4-week study plan to learn Python for a beginner." },
-    { id:"Research Helper", name:"Research Helper", desc:"Assist with research planning.", example:"Help me plan research about soil erosion in Liberia." },
-    { id:"Lesson Explainer", name:"Lesson Explainer", desc:"Explain lessons simply.", example:"Explain photosynthesis to a 12-year-old." },
-    { id:"Financial Guide", name:"Financial Guide", desc:"High level finance tips.", example:"Give tips for budgeting on a tight income." },
-    { id:"AI Assistant", name:"AI Assistant", desc:"General assistant", example:"Help me brainstorm features for an AI tutor website." }
-  ];
+/* -------------------------
+   Tools data
+   ------------------------- */
+const TOOLS = [
+  { id:"Essay Writer", name:"Essay Writer", desc:"Write a well-structured essay.", example:"Write a 600-word essay about the importance of renewable energy." },
+  { id:"Math Solver", name:"Math Solver", desc:"Solve math problems step-by-step.", example:"Integrate x^3 dx from 0 to 2." },
+  { id:"Code Generator", name:"Code Generator", desc:"Generate runnable code snippets.", example:"Write a JavaScript function to debounce a callback." },
+  { id:"Image Description", name:"Image Description", desc:"Create image-generation prompts.", example:"A neon-lit futuristic city at dusk with flying cars." },
+  { id:"Email Writer", name:"Email Writer", desc:"Compose professional emails.", example:"Write a polite follow-up email after an interview." },
+  { id:"Chatbot Tutor", name:"Chatbot Tutor", desc:"Conversational tutor for topics.", example:"Explain Newton's second law and give a simple example." },
+  { id:"Summarizer", name:"Summarizer", desc:"Summarize long text into bullets.", example:"Summarize the following article in five bullets: [paste article]" },
+  { id:"Translator", name:"Translator", desc:"Translate text to another language.", example:"Translate to French: How are you today?" },
+  { id:"Career Advisor", name:"Career Advisor", desc:"Career advice and steps.", example:"I have 2 years experience in web dev. How do I become a fullstack developer?" },
+  { id:"Health Tips", name:"Health Tips", desc:"General safe health tips.", example:"How can I improve sleep quality?" },
+  { id:"Motivation Coach", name:"Motivation Coach", desc:"Encouraging steps and plan.", example:"I feel stuck with studying. Help me feel motivated and create a plan." },
+  { id:"Business Ideas", name:"Business Ideas", desc:"Generate business/startup ideas.", example:"Give 10 edtech startup ideas for African students." },
+  { id:"Poem Creator", name:"Poem Creator", desc:"Short poetic pieces.", example:"Write a short poem about the Atlantic Ocean." },
+  { id:"Story Generator", name:"Story Generator", desc:"Short story generation.", example:"Write a short sci-fi story about finding a message in a bottle on Mars." },
+  { id:"Grammar Corrector", name:"Grammar Corrector", desc:"Fix grammar and clarity.", example:"Correct: I has went to the market yesterday and buy fruits." },
+  { id:"Study Planner", name:"Study Planner", desc:"Create learning schedules.", example:"Create a 4-week study plan to learn Python for a beginner." },
+  { id:"Research Helper", name:"Research Helper", desc:"Assist with research planning.", example:"Help me plan research about soil erosion in Liberia." },
+  { id:"Lesson Explainer", name:"Lesson Explainer", desc:"Explain lessons simply.", example:"Explain photosynthesis to a 12-year-old." },
+  { id:"Financial Guide", name:"Financial Guide", desc:"High level finance tips.", example:"Give tips for budgeting on a tight income." },
+  { id:"AI Assistant", name:"AI Assistant", desc:"General assistant", example:"Help me brainstorm features for an AI tutor website." }
+];
 
-  // Build menu
-  const menu = document.getElementById("toolMenu");
-  TOOLS.forEach((t, idx) => {
-    const btn = document.createElement("button");
-    btn.innerText = t.name;
-    btn.onclick = () => selectTool(t.id);
-    if (idx === 0) btn.classList.add("active");
-    menu.appendChild(btn);
-  });
+/* -------------------------
+   Build sidebar menu
+   ------------------------- */
+const menu = document.getElementById("toolMenu");
+TOOLS.forEach((t, idx) => {
+  const btn = document.createElement("button");
+  btn.innerText = t.name;
+  btn.onclick = () => selectTool(t.id);
+  if (idx === 0) btn.classList.add("active");
+  menu.appendChild(btn);
+});
 
-  let currentTool = TOOLS[0];
-  function selectTool(id) {
-    currentTool = TOOLS.find(t => t.id === id) || TOOLS[0];
-    // mark active
-    Array.from(menu.children).forEach(b => b.classList.remove("active"));
-    const activeBtn = Array.from(menu.children).find(b => b.innerText === currentTool.name);
-    if (activeBtn) activeBtn.classList.add("active");
-    document.getElementById("toolTitle").innerText = currentTool.name;
-    document.getElementById("toolDesc").innerText = currentTool.desc;
-    document.getElementById("promptInput").value = currentTool.example;
-    document.getElementById("featureHelp").innerText = "Tip: " + currentTool.desc;
+let currentTool = TOOLS[0];
+function selectTool(id) {
+  currentTool = TOOLS.find(t => t.id === id) || TOOLS[0];
+  Array.from(menu.children).forEach(b => b.classList.remove("active"));
+  const activeBtn = Array.from(menu.children).find(b => b.innerText === currentTool.name);
+  if (activeBtn) activeBtn.classList.add("active");
+  document.getElementById("toolTitle").innerText = currentTool.name;
+  document.getElementById("toolDesc").innerText = currentTool.desc;
+  document.getElementById("promptInput").value = currentTool.example;
+  document.getElementById("featureHelp").innerText = "Tip: " + currentTool.desc;
+}
+selectTool(TOOLS[0].id);
+
+/* -------------------------
+   Run button: call /api/ask
+   ------------------------- */
+document.getElementById("runBtn").addEventListener("click", async () => {
+  const prompt = document.getElementById("promptInput").value.trim();
+  if (!prompt) return alert("Enter a prompt.");
+
+  // local short-circuit for creator
+  if (/who created|who made|creator|who built|author/i.test(prompt)) {
+    document.getElementById("output").innerText = "This platform was created by Akin S Sokpah from Liberia.";
+    saveLocalHistory(currentTool.name, prompt, document.getElementById("output").innerText);
+    return;
   }
 
-  // initialize
-  selectTool(TOOLS[0].id);
+  document.getElementById("output").innerText = "Thinking...";
 
-  // Run button
-  document.getElementById("runBtn").addEventListener("click", async () => {
-    const prompt = document.getElementById("promptInput").value.trim();
-    if (!prompt) return alert("Enter a prompt.");
-
-    // local creator short-circuit
-    if (/who created|who made|creator|who built|author/i.test(prompt)) {
-      document.getElementById("output").innerText = "This platform was created by Akin S Sokpah from Liberia.";
-      saveLocalHistory(currentTool.name, prompt, document.getElementById("output").innerText);
-      return;
-    }
-
-    document.getElementById("output").innerText = "Thinking...";
-
-    try {
-      const resp = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt, toolId: currentTool.name })
-      });
-      const data = await resp.json();
-      if (data.error) {
-        document.getElementById("output").innerText = "Error: " + (data.error || JSON.stringify(data));
-      } else {
-        document.getElementById("output").innerText = data.reply || JSON.stringify(data);
-        saveLocalHistory(currentTool.name, prompt, data.reply || "");
-      }
-    } catch (err) {
-      document.getElementById("output").innerText = "Network error: " + err.message;
-    }
-  });
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    document.getElementById("promptInput").value = currentTool.example;
-    document.getElementById("output").innerText = "No output yet.";
-  });
-
-  // Simple local history (stored in localStorage)
-  function saveLocalHistory(tool, prompt, output) {
-    const key = "ft_history_v1";
-    const arr = JSON.parse(localStorage.getItem(key) || "[]");
-    arr.unshift({ tool, prompt, output, ts: new Date().toISOString() });
-    localStorage.setItem(key, JSON.stringify(arr.slice(0,50)));
-    renderHistory();
-  }
-  function renderHistory() {
-    const key = "ft_history_v1";
-    const arr = JSON.parse(localStorage.getItem(key) || "[]");
-    const container = document.getElementById("recentList");
-    container.innerHTML = "";
-    if (!arr.length) {
-      container.innerHTML = "<div style='color:var(--muted)'>No recent activity</div>";
-      return;
-    }
-    arr.slice(0,6).forEach(it => {
-      const el = document.createElement("div");
-      el.className = "histItem";
-      el.innerHTML = `<div style="font-weight:600">${it.tool} • <span style="font-size:12px;color:var(--muted)">${new Date(it.ts).toLocaleString()}</span></div><div style="margin-top:6px;font-size:13px">${escapeHtml(it.prompt)}</div>`;
-      container.appendChild(el);
+  try {
+    const resp = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: prompt, toolId: currentTool.name })
     });
+    const data = await resp.json();
+    if (data.error) {
+      document.getElementById("output").innerText = "Error: " + (data.error || JSON.stringify(data));
+    } else {
+      document.getElementById("output").innerText = data.reply || JSON.stringify(data);
+      saveLocalHistory(currentTool.name, prompt, data.reply || "");
+    }
+  } catch (err) {
+    document.getElementById("output").innerText = "Network error: " + err.message;
   }
-  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+});
 
-  // load existing history on start
+/* -------------------------
+   ElevenLabs speak button
+   ------------------------- */
+document.getElementById("speakBtn").addEventListener("click", async () => {
+  const text = document.getElementById("output").innerText || "";
+  if (!text) return alert("Nothing to speak.");
+
+  try {
+    const r = await fetch("/api/eleven", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: "alloy" })
+    });
+    const data = await r.json();
+    if (data.error) return alert("TTS error: " + JSON.stringify(data));
+    const b64 = data.audioBase64;
+    const audioUrl = URL.createObjectURL(base64ToBlob(b64, "audio/mpeg"));
+    const a = new Audio(audioUrl);
+    a.play();
+  } catch (err) {
+    alert("TTS failed: " + err.message);
+  }
+});
+
+function base64ToBlob(base64, mime) {
+  const bytes = atob(base64);
+  const len = bytes.length;
+  const buffer = new Uint8Array(len);
+  for (let i = 0; i < len; i++) buffer[i] = bytes.charCodeAt(i);
+  return new Blob([buffer], { type: mime });
+}
+
+/* -------------------------
+   Upload file (Cloudinary optional)
+   ------------------------- */
+document.getElementById("uploadBtn").addEventListener("click", async () => {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("Choose a file");
+
+  document.getElementById("output").innerText = "Uploading file...";
+
+  // If CLOUDINARY_URL set on server we can use client direct upload unsigned (optional).
+  // Simpler fallback: upload file to /api/transcribe for audio (small files) or send to /api/ask with fileUrl if public.
+  // We'll try to upload to Vercelless path: convert to base64 and send to /api/transcribe for audio, or
+  // If file is image/pdf, we attempt to send as base64 to /api/ask (limited) OR ask user to setup Cloudinary.
+
+  if (file.type.startsWith("audio/")) {
+    // create blob URL to send to transcribe
+    const data = new FormData();
+    data.append("file", file, file.name);
+
+    // We'll upload to a temporary serverless endpoint that proxies to OpenAI? Simpler: convert to base64 and upload to OpenAI via transcribe API (server does fetching)
+    // For safety/size reasons we will open a FileReader and send as data URL to transcribe endpoint that expects fileUrl (we will use fetch + blob -> object URL approach)
+    // Instead: use fetch to create an object URL by uploading file to a temporary anonymous file hosting - but we don't have that.
+    // So we will send the file to a dedicated small upload endpoint (not implemented) — instead we attempt to POST file as base64 to /api/transcribe (server will fetch bytes from base64).
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = reader.result.split(",")[1];
+      try {
+        const r = await fetch("/api/transcribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileUrl: `data:${file.type};base64,${b64}` })
+        });
+        const j = await r.json();
+        if (j.error) {
+          document.getElementById("output").innerText = "Transcription error: " + JSON.stringify(j);
+        } else {
+          document.getElementById("output").innerText = "Transcription: " + (j.transcription || JSON.stringify(j));
+          // auto send transcription to chat
+          const ask = await fetch("/api/ask", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ transcription: j.transcription, toolId: currentTool.name }) });
+          const askJ = await ask.json();
+          document.getElementById("output").innerText = askJ.reply || JSON.stringify(askJ);
+          saveLocalHistory(currentTool.name, "(uploaded audio)", askJ.reply || "");
+        }
+      } catch (err) {
+        document.getElementById("output").innerText = "Upload error: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+    return;
+  } else {
+    // For images/docs: if user has Cloudinary set up, recommend using Cloudinary
+    alert("For images & PDFs, please set up Cloudinary or use a server-side storage. Currently only audio transcription auto-processing is supported without Cloudinary.");
+    return;
+  }
+});
+
+/* -------------------------
+   Audio recorder
+   ------------------------- */
+let recorder, recordedChunks = [];
+document.getElementById("recStart").addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recordedChunks = [];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    recorder.start();
+    document.getElementById("recStart").disabled = true;
+    document.getElementById("recStop").disabled = false;
+  } catch (err) {
+    alert("Microphone access denied: " + err.message);
+  }
+});
+
+document.getElementById("recStop").addEventListener("click", async () => {
+  recorder.stop();
+  document.getElementById("recStart").disabled = false;
+  document.getElementById("recStop").disabled = true;
+  recorder.onstop = async () => {
+    const blob = new Blob(recordedChunks, { type: "audio/webm" });
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = reader.result.split(",")[1];
+      document.getElementById("output").innerText = "Uploading recording, transcribing...";
+      try {
+        const r = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileUrl: `data:audio/webm;base64,${b64}` }) });
+        const j = await r.json();
+        if (j.error) document.getElementById("output").innerText = "Transcription error: " + JSON.stringify(j);
+        else {
+          document.getElementById("output").innerText = "Transcription: " + j.transcription;
+          // send to /api/ask
+          const ask = await fetch("/api/ask", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ transcription: j.transcription, toolId: currentTool.name }) });
+          const askJ = await ask.json();
+          document.getElementById("output").innerText = askJ.reply || JSON.stringify(askJ);
+          saveLocalHistory(currentTool.name, "(recording)", askJ.reply || "");
+        }
+      } catch (err) { document.getElementById("output").innerText = "Error: " + err.message; }
+    };
+    reader.readAsDataURL(blob);
+  };
+});
+
+/* -------------------------
+   Daily join (basic)
+   ------------------------- */
+document.getElementById("joinCallBtn").addEventListener("click", async () => {
+  const roomName = prompt("Enter room name (create one in Daily dashboard):");
+  if (!roomName) return;
+  document.getElementById("output").innerText = "Requesting Daily token...";
+  try {
+    const r = await fetch("/api/daily-token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomName, userName: "Visitor" }) });
+    const j = await r.json();
+    if (j.error) return alert("Daily token error: " + JSON.stringify(j));
+    // j will have token and meeting info; join client-side via DailyIframe
+    const meetingToken = j.token;
+    const meetingUrl = j.url || j.meeting_url || `https://${roomName}.daily.co/${roomName}`;
+    const frame = window.DailyIframe.createFrame(document.getElementById("callContainer"), { showLeaveButton: true });
+    // If token available, pass it to join; DailyIframe join uses url (token based joining requires special setup). We'll open the room URL.
+    await frame.join({ url: meetingUrl });
+    document.getElementById("output").innerText = "Joined call: " + meetingUrl;
+  } catch (err) {
+    alert("Daily error: " + err.message);
+  }
+});
+
+/* -------------------------
+   Local history (localStorage)
+   ------------------------- */
+function saveLocalHistory(tool, prompt, output) {
+  const key = "ft_history_v1";
+  const arr = JSON.parse(localStorage.getItem(key) || "[]");
+  arr.unshift({ tool, prompt, output, ts: new Date().toISOString() });
+  localStorage.setItem(key, JSON.stringify(arr.slice(0, 50)));
   renderHistory();
-
-  // Save button saves current prompt+output manually
-  document.getElementById("saveLocalBtn").addEventListener("click", () => {
-    const prompt = document.getElementById("promptInput").value || "";
-    const output = document.getElementById("output").innerText || "";
-    saveLocalHistory(currentTool.name, prompt, output);
-    alert("Saved locally.");
+}
+function renderHistory() {
+  const arr = JSON.parse(localStorage.getItem("ft_history_v1") || "[]");
+  const c = document.getElementById("recentList");
+  c.innerHTML = "";
+  if (!arr.length) { c.innerHTML = "<div style='color:var(--muted)'>No recent activity</div>"; return; }
+  arr.slice(0,6).forEach(it => {
+    const el = document.createElement("div"); el.className = "histItem";
+    el.innerHTML = `<div style="font-weight:600">${it.tool} • <span style="font-size:12px;color:var(--muted)">${new Date(it.ts).toLocaleString()}</span></div><div style="margin-top:6px;font-size:13px">${escapeHtml(it.prompt)}</div><div style="margin-top:6px;font-size:13px;color:var(--muted)">${escapeHtml(it.output)}</div>`;
+    c.appendChild(el);
   });
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+renderHistory();
+
 </script>
 </body>
 </html>

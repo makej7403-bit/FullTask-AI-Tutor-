@@ -6,22 +6,40 @@ export default async function handler(req, res) {
   }
 
   try {
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const { message } = req.body;
 
-    const userMessage = req.body.message || "";
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ error: "Message is required" });
+    }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: userMessage }],
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
     });
 
-    const aiReply = completion.choices[0].message.content;
+    // FIX: Use a real model + system instruction
+    const completion = await client.chat.completions.create({
+      model: "gpt-4.1",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are FullTask AI Tutor, a helpful, intelligent assistant created by Akin S. Sokpah from Liberia. Give clear, detailed, high-quality answers and NEVER repeat the user's message. Produce original responses only."
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      temperature: 0.7
+    });
 
-    return res.status(200).json({ reply: aiReply });
+    const aiResponse = completion.choices[0].message.content;
+
+    return res.status(200).json({
+      reply: aiResponse // CLEAN STRING OUTPUT
+    });
   } catch (error) {
-    console.error("AI Error:", error);
-    return res.status(500).json({
-      error: error.message || "Unknown error",
-    });
+    console.error("Chat API Error:", error);
+    res.status(500).json({ error: error.message });
   }
 }

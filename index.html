@@ -1,586 +1,121 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FullTask AI Tutor — FullTask AI</title>
-<meta name="description" content="FullTask AI Tutor — Created by Akin S Sokpah from Liberia. Chat, record, upload, speak, and live call with AI." />
-<style>
-  /* ======= Dark Blue Neon Theme (compact) ======= */
-  :root{
-    --bg1:#07122b; --bg2:#0b3d91; --panel:#071a3a; --muted:#9fb3d6; --accent:#2a72ff; --glass: rgba(255,255,255,0.04);
-    --card-shadow: 0 8px 30px rgba(4,12,30,0.5);
-  }
-  *{box-sizing:border-box}
-  html,body,#app{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
-  body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef7}
-  .app{display:flex;min-height:100vh;gap:18px;padding:18px}
-  /* Sidebar */
-  .sidebar{width:300px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:var(--card-shadow);display:flex;flex-direction:column;transition:width .28s}
-  .sidebar.collapsed{width:84px}
-  .brand{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-  .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5aa0ff);display:flex;align-items:center;justify-content:center;font-weight:700}
-  .title{font-weight:700;font-size:18px}
-  .subtitle{color:var(--muted);font-size:13px;margin-bottom:14px}
-  .tool-list{overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-right:6px}
-  .tool-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:8px;text-align:left;color:inherit;cursor:pointer}
-  .tool-btn.active{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.06)}
-  .sidebar-bottom{margin-top:12px}
-  .account-area{display:flex;flex-direction:column;gap:8px}
-  .btn{background:var(--accent);color:white;padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  input[type=file]{width:100%}
-  .muted{color:var(--muted);font-size:13px}
-  .small{font-size:12px}
-  .icon-btn{background:transparent;border:none;color:inherit;font-size:18px;cursor:pointer}
-  /* Main */
-  .main{flex:1;display:flex;flex-direction:column;gap:14px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px}
-  .page-title{font-size:20px;font-weight:700}
-  .tool-tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;color:var(--muted);margin-left:12px}
-  .content{flex:1}
-  .grid{display:grid;grid-template-columns:360px 1fr 340px;gap:18px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;box-shadow:var(--card-shadow)}
-  .tools-grid .grid-items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
-  .tool-tile{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
-  .chat-panel{display:flex;flex-direction:column;height:720px}
-  .chat-window{flex:1;overflow:auto;padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01))}
-  .message{max-width:75%;padding:10px 12px;margin:8px 0;border-radius:12px;white-space:pre-wrap}
-  .message.user{margin-left:auto;background:linear-gradient(90deg,var(--accent),#4ea0ff);color:#fff}
-  .message.ai{margin-right:auto;background:rgba(255,255,255,0.03);color:inherit;border:1px solid rgba(255,255,255,0.02)}
-  .composer{margin-top:12px;display:flex;flex-direction:column}
-  textarea{resize:vertical;border-radius:10px;padding:12px;border:none;background:rgba(255,255,255,0.02);color:inherit}
-  .composer-actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-  .left-actions{display:flex;gap:8px}
-  .right-actions{display:flex;gap:8px}
-  .sidecard{height:720px;display:flex;flex-direction:column;gap:12px}
-  .divider{height:1px;background:rgba(255,255,255,0.02);margin:8px 0}
-  footer.footer{color:var(--muted);font-size:13px;text-align:center;margin-top:8px}
-  /* responsive */
-  @media(max-width:1100px){
-    .grid{grid-template-columns:1fr;grid-auto-rows:auto}
-    .sidebar{display:none}
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FullTask AI Tutor</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-<div id="app" class="app">
-  <!-- Sidebar -->
-  <aside id="sidebar" class="sidebar">
-    <div class="brand">
-      <div class="logo">FT</div>
-      <div>
-        <div class="title">FullTask</div>
-        <div class="subtitle">AI Tutor</div>
-      </div>
-    </div>
-
-    <div class="subtitle muted">Created by Akin S Sokpah — Liberia</div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="collapseBtn" class="icon-btn" title="Toggle sidebar">☰</button>
-      </div>
-      <div><button id="signOutBtn" class="btn secondary" style="display:none">Sign out</button></div>
-    </div>
-
-    <div style="margin-bottom:8px">
-      <input id="toolSearch" placeholder="Search tools..." style="width:100%;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:inherit" />
-    </div>
-
-    <div id="toolList" class="tool-list"></div>
-
-    <div class="sidebar-bottom">
-      <div class="account-area">
-        <button id="signInBtn" class="btn full">Sign in with Google</button>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">FT</div>
+        <div>
+          <div class="title">FullTask AI</div>
+          <div class="subtitle">AI Tutor — Akin S Sokpah (Liberia)</div>
+        </div>
       </div>
 
-      <div style="margin-top:10px">
-        <label class="muted small">Uploads</label>
-        <input id="fileInput" type="file" accept="image/*,audio/*,application/pdf" />
+      <div class="account">
+        <button id="signInBtn" class="btn">Sign in with Google</button>
+        <button id="signOutBtn" class="btn secondary" style="display:none">Sign out</button>
+        <div id="userInfo" class="muted small" style="margin-top:8px"></div>
       </div>
 
-      <div style="margin-top:12px" class="muted small">
-        Contact creator:<br/>
-        <a href="https://www.facebook.com/profile.php?id=61583456361691" target="_blank" style="color:#cfe8ff">Facebook</a><br/>
+      <div class="tools">
+        <input id="toolSearch" placeholder="Search tools..." />
+        <div id="toolList" class="tool-list"></div>
+      </div>
+
+      <div class="sidebar-foot muted small">
+        Contact: <a href="https://www.facebook.com/profile.php?id=61583456361691" target="_blank">Facebook</a><br/>
         sokpahakinsaye@gmail.com
       </div>
-    </div>
-  </aside>
+    </aside>
 
-  <!-- Main -->
-  <main class="main">
-    <header class="topbar">
-      <div class="left" style="display:flex;align-items:center;gap:10px">
-        <button id="menuToggle" class="icon-btn">☰</button>
-        <div class="page-title">FullTask AI Tutor</div>
-        <div id="activeToolTag" class="tool-tag">AI Assistant</div>
-      </div>
-      <div class="right" style="display:flex;gap:8px">
-        <button id="joinCallBtn" class="btn secondary">Join Live Call</button>
-        <button id="ttsBtn" class="btn secondary">Speak Reply</button>
-      </div>
-    </header>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="page-title">FullTask AI Tutor</div>
+          <div id="activeTool" class="muted small">AI Assistant</div>
+        </div>
+        <div>
+          <button id="ttsBtn" class="btn secondary">Speak Reply</button>
+          <button id="joinCallBtn" class="btn secondary">Join Live Call</button>
+        </div>
+      </header>
 
-    <section class="content">
-      <div class="grid">
-        <!-- Tools grid -->
-        <section class="tools-grid card">
-          <div class="grid-header">
-            <h3 style="margin:0">Tools</h3>
-            <div class="small muted">Tap a tool to load example prompts</div>
-          </div>
-          <div id="toolsGrid" class="grid-items" style="margin-top:12px"></div>
-        </section>
+      <section class="content">
+        <div class="grid">
+          <section class="tools-grid card">
+            <h3>Tools</h3>
+            <div id="toolsGrid" class="grid-items"></div>
+          </section>
 
-        <!-- Chat -->
-        <section class="chat-panel card">
-          <div id="chatWindow" class="chat-window" role="log" aria-live="polite"></div>
+          <section class="chat-panel card">
+            <div id="chatWindow" class="chat-window" role="log" aria-live="polite"></div>
 
-          <div class="composer">
-            <textarea id="promptInput" placeholder="Ask FullTask AI Tutor..." rows="4"></textarea>
-            <div class="composer-actions">
-              <div class="left-actions">
-                <button id="startRec" class="icon-btn">🎤</button>
-                <button id="stopRec" class="icon-btn" disabled>⏹</button>
-                <input id="hiddenAudio" type="file" accept="audio/*" style="display:none" />
-              </div>
-              <div class="right-actions">
-                <button id="resetBtn" class="btn secondary">Reset</button>
-                <button id="runBtn" class="btn">Run</button>
+            <div class="composer">
+              <textarea id="promptInput" placeholder="Ask FullTask AI Tutor..." rows="4"></textarea>
+              <div class="composer-actions">
+                <div class="left-actions">
+                  <button id="startRec" class="icon-btn">🎤</button>
+                  <button id="stopRec" class="icon-btn" disabled>⏹</button>
+                </div>
+                <div class="right-actions">
+                  <button id="resetBtn" class="btn secondary">Reset</button>
+                  <button id="runBtn" class="btn primary">Run</button>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- Right panel -->
-        <aside class="sidecard card">
-          <h4 style="margin:0">Feature Help</h4>
-          <div id="featureHelp" class="muted">Select a feature to see example prompts and tips.</div>
+          <aside class="sidecard card">
+            <h4>Feature Help</h4>
+            <div id="featureHelp" class="muted">Select a tool to see example prompts.</div>
+            <div class="divider"></div>
+            <h4>Recording</h4>
+            <div class="muted small">Record voice, transcribe and send to AI.</div>
+          </aside>
+        </div>
+      </section>
 
-          <div class="divider"></div>
+      <footer class="footer muted small">
+        FullTask AI Tutor — Created by Akin S Sokpah from Liberia
+      </footer>
+    </main>
+  </div>
 
-          <h4 style="margin:0">Recording</h4>
-          <div class="muted small">Use Start / Stop to record audio and auto-transcribe into the chat.</div>
+  <!-- Firebase client (Google Sign-In) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-          <div class="divider"></div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
+      authDomain: "fir-u-c-students-web.firebaseapp.com",
+      databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
+      projectId: "fir-u-c-students-web",
+      storageBucket: "fir-u-c-students-web.firebasestorage.app",
+      messagingSenderId: "113569186739",
+      appId: "1:113569186739:web:d8daf21059f43a79e841c6"
+    };
 
-          <h4 style="margin:0">Live Call</h4>
-          <div><button id="openCallModal" class="btn">Start / Join Live Call</button></div>
+    const fbApp = initializeApp(firebaseConfig);
+    const auth = getAuth(fbApp);
+    const provider = new GoogleAuthProvider();
 
-          <div class="divider"></div>
+    // expose helpers to app.js via global container
+    window.__FT__ = window.__FT__ || {};
+    window.__FT__.auth = auth;
+    window.__FT__.provider = provider;
+    window.__FT__.signInWithPopup = signInWithPopup;
+    window.__FT__.signOut = signOut;
+    window.__FT__.onAuthStateChanged = onAuthStateChanged;
+  </script>
 
-          <h4 style="margin:0">Creator</h4>
-          <div class="muted small">Akin S Sokpah from Liberia</div>
-        </aside>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <div>FullTask AI Tutor — Created by Akin S Sokpah from Liberia • <a href="https://www.facebook.com/profile.php?id=61583456361691" target="_blank" style="color:#cfe8ff">Facebook</a></div>
-    </footer>
-  </main>
-</div>
-
-<!-- Firebase (Google Sign-In) -->
-<script type="module">
-/* ======== Firebase setup (client) ========
-   This uses the firebase client SDK for Google Sign-In.
-   The user provided config is used below.
-   If you'd rather put these in env vars, change accordingly.
-*/
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
-  authDomain: "fir-u-c-students-web.firebaseapp.com",
-  databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
-  projectId: "fir-u-c-students-web",
-  storageBucket: "fir-u-c-students-web.firebasestorage.app",
-  messagingSenderId: "113569186739",
-  appId: "1:113569186739:web:d8daf21059f43a79e841c6"
-};
-const fb = initializeApp(firebaseConfig);
-const auth = getAuth(fb);
-const provider = new GoogleAuthProvider();
-
-// expose auth helpers to global so the main app script can use them
-window.__FT__ = window.__FT__ || {};
-window.__FT__.auth = auth;
-window.__FT__.provider = provider;
-window.__FT__.signInWithPopup = signInWithPopup;
-window.__FT__.signOut = signOut;
-window.__FT__.onAuthStateChanged = onAuthStateChanged;
-</script>
-
-<!-- App logic (all client JS live inside single file) -->
-<script>
-(() => {
-  // ----- Config -----
-  const TOOLS = [
-    { id: "Essay Writer", example: "Write a 600-word essay about the importance of renewable energy." },
-    { id: "Math Solver", example: "Integrate x^3 dx from 0 to 2 and show steps." },
-    { id: "Code Generator", example: "Write a JavaScript debounce function with examples." },
-    { id: "Image Description", example: "Create a prompt: Neon futuristic city at dusk with flying cars." },
-    { id: "Email Writer", example: "Write a polite follow-up email after an interview." },
-    { id: "Chatbot Tutor", example: "Explain Newton's second law with a classroom example." },
-    { id: "Summarizer", example: "Summarize this article into five bullet points: [paste article]" },
-    { id: "Translator", example: "Translate to French: How are you today?" },
-    { id: "Career Advisor", example: "I have 2 years of web dev, how to become a fullstack dev?" },
-    { id: "Health Tips", example: "How can I improve sleep quality?" },
-    { id: "Motivation Coach", example: "I feel stuck studying, help me create a 7-day plan." },
-    { id: "Business Ideas", example: "Give 10 edtech startup ideas for African students." },
-    { id: "Poem Creator", example: "Write a short poem about the Atlantic Ocean." },
-    { id: "Story Generator", example: "Write a short sci-fi story about finding a message in a bottle on Mars." },
-    { id: "Grammar Corrector", example: "Correct: I has went to the market yesterday and buy fruits." },
-    { id: "Study Planner", example: "Create a 4-week study plan to learn Python for a beginner." },
-    { id: "Research Helper", example: "Help me plan research about soil erosion in Liberia." },
-    { id: "Lesson Explainer", example: "Explain photosynthesis to a 12-year-old." },
-    { id: "Financial Guide", example: "Give tips for budgeting on a tight income." },
-    { id: "AI Assistant", example: "Help me brainstorm features for an AI tutor website." }
-  ];
-
-  // DOM refs
-  const sidebar = document.getElementById("sidebar");
-  const collapseBtn = document.getElementById("collapseBtn");
-  const menuToggle = document.getElementById("menuToggle");
-  const toolList = document.getElementById("toolList");
-  const toolsGrid = document.getElementById("toolsGrid");
-  const toolSearch = document.getElementById("toolSearch");
-  const toolsGridContainer = document.getElementById("toolsGrid");
-  const activeToolTag = document.getElementById("activeToolTag");
-  const promptInput = document.getElementById("promptInput");
-  const runBtn = document.getElementById("runBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const chatWindow = document.getElementById("chatWindow");
-  const startRec = document.getElementById("startRec");
-  const stopRec = document.getElementById("stopRec");
-  const signInBtn = document.getElementById("signInBtn");
-  const signOutBtn = document.getElementById("signOutBtn");
-  const fileInput = document.getElementById("fileInput");
-  const ttsBtn = document.getElementById("ttsBtn");
-  const joinCallBtn = document.getElementById("joinCallBtn");
-  const openCallModalBtn = document.getElementById("openCallModal");
-  const featureHelp = document.getElementById("featureHelp");
-
-  // state
-  let currentTool = TOOLS[0];
-  let messages = []; // ephemeral: cleared on refresh
-  let mediaRecorder = null;
-  let recordedChunks = [];
-  let user = null;
-
-  // initialize menu + grid
-  function renderToolList(filter = "") {
-    toolList.innerHTML = "";
-    TOOLS.filter(t => t.id.toLowerCase().includes(filter.toLowerCase())).forEach(t => {
-      const b = document.createElement("button");
-      b.className = "tool-btn";
-      b.innerText = t.id;
-      b.onclick = () => selectTool(t.id);
-      if (t.id === currentTool.id) b.classList.add("active");
-      toolList.appendChild(b);
-    });
-  }
-  function renderGrid() {
-    toolsGridContainer.innerHTML = "";
-    TOOLS.forEach(t => {
-      const div = document.createElement("div");
-      div.className = "tool-tile";
-      div.innerHTML = `<strong>${t.id}</strong><div class="muted small" style="margin-top:6px">${t.example.slice(0,90)}${t.example.length>90?'...':''}</div>`;
-      div.onclick = () => selectTool(t.id);
-      toolsGridContainer.appendChild(div);
-    });
-  }
-  function selectTool(id) {
-    const t = TOOLS.find(x => x.id === id);
-    if (!t) return;
-    currentTool = t;
-    activeToolTag.innerText = t.id;
-    promptInput.value = t.example;
-    featureHelp.innerText = "Tip: " + t.example;
-    renderToolList(toolSearch.value);
-  }
-
-  // initial render
-  renderToolList();
-  renderGrid();
-  selectTool(TOOLS[0].id);
-
-  // collapse behavior
-  collapseBtn.onclick = () => sidebar.classList.toggle("collapsed");
-  menuToggle.onclick = () => {
-    if (sidebar.style.display === "none") sidebar.style.display = "block"; else sidebar.style.display = "block";
-    // in responsive mode, sidebar is hidden by css - we keep it simple here
-  };
-  toolSearch.oninput = () => renderToolList(toolSearch.value);
-
-  // chat rendering
-  function appendMessage(text, who = "ai") {
-    const div = document.createElement("div");
-    div.className = "message " + (who === "user" ? "user" : "ai");
-    const roleLabel = document.createElement("div");
-    roleLabel.style.fontSize = "12px";
-    roleLabel.style.color = "var(--muted)";
-    roleLabel.style.marginBottom = "6px";
-    roleLabel.textContent = who === "user" ? "You" : "FullTask AI";
-    div.appendChild(roleLabel);
-    const body = document.createElement("div");
-    body.innerText = text;
-    div.appendChild(body);
-    chatWindow.appendChild(div);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  }
-  function setThinking() {
-    const div = document.createElement("div");
-    div.className = "message ai";
-    div.id = "thinking";
-    div.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">FullTask AI</div><div class="muted">Thinking<span id="dots">.</span></div>`;
-    chatWindow.appendChild(div);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-    let dots = 1;
-    div._interval = setInterval(()=>{ const el = document.getElementById("dots"); if(el) { dots = (dots%3)+1; el.innerText = '.'.repeat(dots); } },400);
-  }
-  function clearThinking() {
-    const t = document.getElementById("thinking");
-    if (t) { clearInterval(t._interval); t.remove(); }
-  }
-
-  // send to server /api/ask
-  async function sendToServer(promptText) {
-    // UI
-    appendMessage(promptText, "user");
-    setThinking();
-    try {
-      const res = await fetch("/api/ask", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ message: promptText, toolId: currentTool.id })
-      });
-      // if server returns HTML or error, handle gracefully
-      const contentType = res.headers.get("content-type") || "";
-      if (!res.ok) {
-        let text = await res.text();
-        clearThinking();
-        appendMessage("Server error: " + (text || res.statusText), "ai");
-        return;
-      }
-      if (contentType.includes("application/json")) {
-        const j = await res.json();
-        clearThinking();
-        appendMessage(j.reply || j.error || "No response", "ai");
-      } else {
-        // not JSON (probably HTML error)
-        let txt = await res.text();
-        clearThinking();
-        appendMessage("Server returned invalid response. Check server logs.", "ai");
-        console.error("Invalid server response:", txt);
-      }
-    } catch (err) {
-      clearThinking();
-      appendMessage("Network error: " + err.message, "ai");
-      console.error(err);
-    }
-  }
-
-  // Run button
-  runBtn.onclick = async () => {
-    const text = promptInput.value.trim();
-    if (!text) return alert("Enter a prompt");
-    await sendToServer(text);
-  };
-  resetBtn.onclick = () => {
-    promptInput.value = currentTool.example;
-  };
-
-  // Recording
-  startRec.onclick = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-      recordedChunks = [];
-      mediaRecorder.ondataavailable = (e) => { if(e.data.size) recordedChunks.push(e.data); };
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(recordedChunks,{ type:"audio/webm" });
-        // convert to data URL
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const dataUrl = reader.result;
-          // call transcription endpoint
-          appendMessage("[Recorded audio sent for transcription...]", "ai");
-          try {
-            const r = await fetch("/api/transcribe", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ fileUrl: dataUrl }) });
-            const j = await r.json();
-            if (j.transcription) {
-              appendMessage("Transcription: " + j.transcription, "ai");
-              await sendToServer(j.transcription);
-            } else {
-              appendMessage("Transcription failed", "ai");
-              console.error(j);
-            }
-          } catch (err) {
-            appendMessage("Transcription error: " + err.message, "ai");
-          }
-        };
-        reader.readAsDataURL(blob);
-      };
-      mediaRecorder.start();
-      startRec.disabled = true; stopRec.disabled = false;
-      appendMessage("[Recording... Click stop to finish.]", "ai");
-    } catch (err) {
-      alert("Microphone access denied: " + err.message);
-    }
-  };
-
-  stopRec.onclick = () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
-    startRec.disabled = false; stopRec.disabled = true;
-  };
-
-  // File upload (audio => transcribe, images/pdf -> info)
-  fileInput.onchange = async (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (f.type.startsWith("audio/")) {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const dataUrl = reader.result;
-        appendMessage("[Uploading audio for transcription...]", "ai");
-        try {
-          const r = await fetch("/api/transcribe", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ fileUrl: dataUrl }) });
-          const j = await r.json();
-          if (j.transcription) {
-            appendMessage("Transcription: " + j.transcription, "ai");
-            await sendToServer(j.transcription);
-          } else {
-            appendMessage("Transcription failed", "ai");
-            console.error(j);
-          }
-        } catch (err) {
-          appendMessage("Upload error: " + err.message, "ai");
-        }
-      };
-      reader.readAsDataURL(f);
-    } else {
-      appendMessage("For images & PDFs: to use them with AI please enable Cloudinary/S3 integration (ask me and I will add it).", "ai");
-    }
-  };
-
-  // ElevenLabs TTS (speak last AI reply)
-  ttsBtn.onclick = async () => {
-    // find last ai message
-    const msgs = Array.from(chatWindow.querySelectorAll(".message"));
-    const lastAi = [...msgs].reverse().find(m => m.classList.contains("ai"));
-    const text = lastAi ? lastAi.innerText.replace(/^FullTask AI\s*/,'') : "";
-    if (!text) return alert("No AI reply to speak");
-    try {
-      const r = await fetch("/api/eleven", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ text, voice: "alloy" }) });
-      const j = await r.json();
-      if (j.audioBase64) {
-        const b64 = j.audioBase64;
-        const blob = base64ToBlob(b64, "audio/mpeg");
-        const url = URL.createObjectURL(blob);
-        const a = new Audio(url);
-        a.play();
-      } else {
-        alert("TTS failed");
-        console.error(j);
-      }
-    } catch (err) {
-      alert("TTS error: " + err.message);
-    }
-  };
-
-  function base64ToBlob(b64, mime) {
-    const bin = atob(b64);
-    const len = bin.length;
-    const arr = new Uint8Array(len);
-    for (let i=0;i<len;i++) arr[i] = bin.charCodeAt(i);
-    return new Blob([arr], { type: mime });
-  }
-
-  // Daily join (asks server for meeting token)
-  joinCallBtn.onclick = async () => {
-    const room = prompt("Enter Daily room name (create one in Daily.co dashboard):");
-    if (!room) return;
-    appendMessage("[Requesting Daily meeting token...]", "ai");
-    try {
-      const r = await fetch("/api/daily-token", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ roomName: room, userName: user ? (user.displayName||user.email) : "Guest" }) });
-      const j = await r.json();
-      if (j.error) {
-        appendMessage("Daily token error: " + j.error, "ai");
-        console.error(j);
-        return;
-      }
-      // open new tab with daily room url (token flow advanced — recommend server-side join or Daily iframe)
-      const meetingUrl = j.url || (typeof j === 'string' ? j : `https://${room}.daily.co/${room}`);
-      window.open(meetingUrl, "_blank");
-      appendMessage("Opened Daily room: " + meetingUrl, "ai");
-    } catch (err) {
-      appendMessage("Daily error: " + err.message, "ai");
-      console.error(err);
-    }
-  };
-
-  // Google Sign-in
-  signInBtn.onclick = async () => {
-    try {
-      const auth = window.__FT__.auth;
-      const provider = window.__FT__.provider;
-      const signInWithPopup = window.__FT__.signInWithPopup;
-      const res = await signInWithPopup(auth, provider);
-      user = res.user;
-      onSignedIn(user);
-    } catch (err) {
-      console.error(err);
-      alert("Sign-in failed: " + err.message);
-    }
-  };
-  signOutBtn.onclick = async () => {
-    try {
-      await window.__FT__.signOut(window.__FT__.auth);
-      user = null;
-      onSignedOut();
-    } catch (err) { console.error(err); }
-  };
-  window.__FT__.onAuthStateChanged(window.__FT__.auth, (u) => {
-    if (u) { user = u; onSignedIn(u); } else { user = null; onSignedOut(); }
-  });
-  function onSignedIn(u) {
-    document.getElementById("signInBtn").style.display = "none";
-    document.getElementById("signOutBtn").style.display = "inline-block";
-    appendMessage(`Signed in as ${u.displayName || u.email}`, "ai");
-  }
-  function onSignedOut() {
-    document.getElementById("signInBtn").style.display = "inline-block";
-    document.getElementById("signOutBtn").style.display = "none";
-    appendMessage("Signed out", "ai");
-  }
-
-  // Quick safety: clear any stored history on load (session ephemeral)
-  try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
-
-  // Typing Enter to send
-  promptInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      runBtn.click();
-    }
-  });
-
-  // Small UX: prefill prompt for first tool
-  promptInput.value = currentTool.example;
-
-  // small helper: expose some debug helpers
-  window.FullTask = {
-    send: () => runBtn.click(),
-    selectTool: (id) => selectTool(id),
-    getMessages: () => messages
-  };
-
-  // Done
-})();
-</script>
+  <!-- App JS -->
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

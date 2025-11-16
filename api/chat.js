@@ -1,31 +1,64 @@
-export default async function handler(req, res) {
+export const config = {
+  runtime: "edge", // Fastest Vercel runtime
+};
+
+export default async function handler(req) {
+  try {
     if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
+      return new Response(
+        JSON.stringify({ error: "Method not allowed" }),
+        { status: 405 }
+      );
     }
 
-    try {
-        const { prompt } = req.body;
+    const { message } = await req.json();
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4.1-mini",
-                messages: [
-                    { role: "system", content: "You are FullTask AI Tutor made by Akin S. Sokpah from Liberia." },
-                    { role: "user", content: prompt }
-                ]
-            })
-        });
-
-        const data = await response.json();
-
-        return res.status(200).json({ reply: data.choices[0].message.content });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Chat API failed" });
+    if (!message) {
+      return new Response(
+        JSON.stringify({ error: "Missing message" }),
+        { status: 400 }
+      );
     }
+
+    // Call OpenAI API
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, // SAFE
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are FullTask AI Tutor, created by Akin S. Sokpah from Liberia. You help with essays, homework, explanations, and tutoring. Respond in a friendly, clear, helpful tone."
+          },
+          { role: "user", content: message }
+        ],
+        max_tokens: 500,
+      }),
+    });
+
+    const data = await response.json();
+
+    // If OpenAI returns an error
+    if (data.error) {
+      return new Response(
+        JSON.stringify({ error: data.error.message }),
+        { status: 500 }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ reply: data.choices[0].message.content }),
+      { status: 200 }
+    );
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500 }
+    );
+  }
 }

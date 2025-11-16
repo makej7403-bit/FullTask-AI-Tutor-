@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FullTask AI Tutor</title>
+
+<!-- Background Style -->
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, #003d99, #1a75ff);
+        color: white;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    header {
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* Floating Menu Button */
+    #menuButton {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: white;
+        color: #003d99;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Full-screen Menu */
+    #menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.85);
+        color: white;
+        backdrop-filter: blur(4px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 60px;
+    }
+
+    #menu h2 {
+        margin-bottom: 20px;
+        font-size: 28px;
+    }
+
+    .menuItem {
+        margin: 8px 0;
+        padding: 14px 18px;
+        background: #1a75ff;
+        width: 80%;
+        text-align: center;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    /* Chat Box */
+    #chatBox {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    #userInput {
+        width: 80%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+    }
+
+    #sendBtn {
+        padding: 12px 20px;
+        border: none;
+        background: white;
+        color: #003d99;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #output {
+        padding: 20px;
+        margin-top: 40px;
+        height: 55vh;
+        overflow-y: auto;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<header>FullTask AI Tutor</header>
+
+<button id="menuButton">☰ Menu</button>
+
+<!-- Full-Screen Menu -->
+<div id="menu">
+    <h2>AI Tools Menu</h2>
+
+    <!-- 20 AI tools -->
+    <div class="menuItem">Essay Writer</div>
+    <div class="menuItem">Math Solver</div>
+    <div class="menuItem">Code Generator</div>
+    <div class="menuItem">Image Description</div>
+    <div class="menuItem">Email Writer</div>
+    <div class="menuItem">Chatbot Tutor</div>
+    <div class="menuItem">Summarizer</div>
+    <div class="menuItem">Translator</div>
+    <div class="menuItem">Career Advisor</div>
+    <div class="menuItem">Health Tips</div>
+    <div class="menuItem">Motivation Coach</div>
+    <div class="menuItem">Business Ideas</div>
+    <div class="menuItem">Poem Creator</div>
+    <div class="menuItem">Story Generator</div>
+    <div class="menuItem">Grammar Corrector</div>
+    <div class="menuItem">Study Planner</div>
+    <div class="menuItem">Research Helper</div>
+    <div class="menuItem">Lesson Explainer</div>
+    <div class="menuItem">Financial Guide</div>
+    <div class="menuItem">AI Assistant</div>
+</div>
+
+<!-- Output -->
+<div id="output"></div>
+
+<!-- Input -->
+<div id="chatBox">
+    <input id="userInput" type="text" placeholder="Ask FullTask AI Tutor..." />
+    <button id="sendBtn">Send</button>
+</div>
+
+<script>
+    // Menu toggle
+    const menu = document.getElementById("menu");
+    const menuButton = document.getElementById("menuButton");
+
+    menuButton.onclick = () => {
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    };
+
+    // Output box
+    const output = document.getElementById("output");
+
+    // Send button
+    document.getElementById("sendBtn").onclick = async () => {
+        let text = document.getElementById("userInput").value;
+        if (!text) return;
+
+        output.innerHTML += `<div><b>You:</b> ${text}</div>`;
+
+        // AI Response
+        let reply = await getAIResponse(text);
+
+        output.innerHTML += `<div><b>FullTask AI:</b> ${reply}</div>`;
+    };
+
+    // Simple AI logic
+    async function getAIResponse(userMessage) {
+        // The special creator message
+        if (userMessage.toLowerCase().includes("who created")) {
+            return "FullTask AI Tutor was created by Akin S. Sokpah from Liberia.";
+        }
+
+        return "This is a demo response. (AI API can be connected here).";
+    }
+</script>
+
+</body>
+</html>
